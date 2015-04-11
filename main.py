@@ -37,16 +37,16 @@ class getThread (threading.Thread):
         threading.Thread.__init__(self)
     def run(self):
         print ("get-thread")
-        # global words
-        # if self.request.path == "/osp/myserver/count":
-        #     self.request.send_response(200)
-        #     self.request.send_header("Content-type", "text/plain")
-        #     self.request.end_headers()
-        #     self.request.wfile.write(str(len(words)).encode())
-        #     words = {}
-        # else:
-        #     self.request.send_response(404)
-        #     self.request.end_headers()
+        global words
+        if self.request.path == "/osp/myserver/count":
+            self.request.send_response(200)
+            self.request.send_header("Content-type", "text/plain")
+            self.request.end_headers()
+            self.request.wfile.write(str(len(words)).encode())
+            words = {}
+        else:
+            self.request.send_response(404)
+            self.request.end_headers()
 
 
 
