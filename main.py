@@ -18,7 +18,7 @@ class postThread (threading.Thread):
     def __init__(self, request):
         threading.Thread.__init__(self)
     def run(self):
-        print ("post")
+        print ("post-thread")
         # global words
         # if self.request.path == "/osp/myserver/data":
         #     length = int(self.request.headers.get('Content-Length'))
@@ -36,7 +36,7 @@ class getThread (threading.Thread):
     def __init__(self, request):
         threading.Thread.__init__(self)
     def run(self):
-        print ("get")
+        print ("get-thread")
         # global words
         # if self.request.path == "/osp/myserver/count":
         #     self.request.send_response(200)
@@ -53,6 +53,7 @@ class getThread (threading.Thread):
 
 class OSPHTTPHandler(BaseHTTPRequestHandler):
     def do_POST(self):
+        print("post")
         global postThreads
         t = postThread(self)
         postThreads.append(t)
@@ -60,6 +61,7 @@ class OSPHTTPHandler(BaseHTTPRequestHandler):
 
 
     def do_GET(self):
+        print ("get")
         global postThreads, getT
         getT = getThread(self)
         for t in postThreads:
