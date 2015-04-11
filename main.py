@@ -75,6 +75,7 @@ print("Listening on port", httpd.server_port)
 #process post requests simultaneously, but wait when get request
 while 1:
     if getT is None:
+        print("handling request")
         httpd.handle_request()
     else:
         getT.join()
