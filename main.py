@@ -58,11 +58,11 @@ class GetThread (threading.Thread):
 
 class ThreadedOSPHTTPHandler(BaseHTTPRequestHandler):
     def do_POST(self):
-        print("post")
+        # print("post")
         global postThreads
         t = threading.current_thread()
         postThreads.append(t)
-        #do the handling now
+        # do the handling now
         global words
         if self.path == "/osp/myserver/data":
             length = int(self.headers.get('Content-Length'))
@@ -76,7 +76,7 @@ class ThreadedOSPHTTPHandler(BaseHTTPRequestHandler):
             self.end_headers()
 
     def do_GET(self):
-        print ("get")
+        # print ("get")
         global postThreads, getT
         getT = threading.current_thread()
         for t in postThreads:
@@ -103,7 +103,7 @@ print("Listening on port", httpd.server_port)
 #process post requests simultaneously, but wait when get request
 while 1:
     if getT is None:
-        print("handling request")
+        # print("handling request")
         httpd.handle_request()
     else:
         getT.join()
