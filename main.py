@@ -2,6 +2,7 @@
 __author__ = 'Pavel'
 
 from http.server import HTTPServer, BaseHTTPRequestHandler
+from socketserver import ThreadingMixIn
 import threading
 
 
@@ -9,11 +10,14 @@ postThreads = []
 getT = None
 
 words = {}
-
 threadLock = threading.Lock()
 
 
-class postThread (threading.Thread):
+class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
+    pass
+
+
+class PostThread (threading.Thread):
     def __init__(self, request):
         threading.Thread.__init__(self)
         self.request = request
@@ -32,7 +36,7 @@ class postThread (threading.Thread):
             self.request.end_headers()
 
 
-class getThread (threading.Thread):
+class GetThread (threading.Thread):
     def __init__(self, request):
         threading.Thread.__init__(self)
         self.request = request
@@ -52,26 +56,47 @@ class getThread (threading.Thread):
 
 
 
-class OSPHTTPHandler(BaseHTTPRequestHandler):
+class ThreadedOSPHTTPHandler(BaseHTTPRequestHandler):
     def do_POST(self):
         print("post")
         global postThreads
-        t = postThread(self)
+        t = threading.current_thread()
         postThreads.append(t)
-        t.start()
-
+        #do the handling now
+        global words
+        if self.path == "/osp/myserver/data":
+            length = int(self.headers.get('Content-Length'))
+            text = self.rfile.read(length).decode("utf-8")
+            for word in text.split():
+                words[word] = 1
+            self.send_response(204) # No Content
+            self.end_headers()
+        else:
+            self.send_response(404)
+            self.end_headers()
 
     def do_GET(self):
         print ("get")
         global postThreads, getT
-        getT = getThread(self)
+        getT = threading.current_thread()
         for t in postThreads:
             t.join()
         postThreads=[]
-        getT.start()
+        #do the handling now
+        global words
+        if self.path == "/osp/myserver/count":
+            self.send_response(200)
+            self.send_header("Content-type", "text/plain")
+            self.end_headers()
+            self.wfile.write(str(len(words)).encode())
+            words = {}
+        else:
+            self.send_response(404)
+            self.end_headers()
+        # end of handling
         getT=None
 
-httpd = HTTPServer(('', 8001), OSPHTTPHandler)
+httpd = ThreadedHTTPServer(('', 8000), ThreadedOSPHTTPHandler)
 print("Listening on port", httpd.server_port)
 #httpd.serve_forever()
 
